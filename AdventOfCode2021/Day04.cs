@@ -1,6 +1,6 @@
 ﻿namespace AdventOfCode2021
 {
-    public class Day15
+    public class Day04
     {
         public static long Part1(List<string> data)
         {

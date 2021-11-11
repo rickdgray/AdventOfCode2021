@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace AdventOfCode2020
+﻿namespace AdventOfCode2021
 {
     public class Day21
     {
         public static long Part1(List<string> data)
         {
-            throw new NotImplementedException();
+            return -1;
         }
 
         public static long Part2(List<string> data)
         {
-            throw new NotImplementedException();
+            return -1;
         }
     }
 }
