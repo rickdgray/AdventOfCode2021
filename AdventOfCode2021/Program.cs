@@ -1,7 +1,7 @@
 ﻿using AdventOfCode2021;
 
 var workingDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
-var path = Path.Combine(workingDirectory?.Parent?.Parent?.Parent?.FullName ?? throw new DirectoryNotFoundException(), "Data", "day01.txt");
+var path = Path.Combine(workingDirectory?.FullName ?? throw new DirectoryNotFoundException(), "Data", "day01.txt");
 using var fileStream = File.OpenRead(path);
 using var streamReader = new StreamReader(fileStream);
 
