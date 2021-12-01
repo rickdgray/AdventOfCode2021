@@ -14,3 +14,5 @@ while ((line = streamReader.ReadLine()) != null)
 
 //currently working on:
 Console.WriteLine(Day02.Part1(data));
+
+//test
