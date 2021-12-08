@@ -62,6 +62,8 @@
                 digitLookup.Add(input[1].Except(input[0]).First(), Segment.Top);
             }
 
+            //test
+
             throw new NotImplementedException();
         }
 
