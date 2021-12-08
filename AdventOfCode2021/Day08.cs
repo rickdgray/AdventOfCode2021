@@ -42,29 +42,71 @@
                         .Split(' ')
                         .Select(s => new HashSet<int>(s
                             .ToCharArray()
-                            .Select(c => (int)c))))
-                        .OrderBy(d => d.Count)
-                        .ToList(),
+                            .Select(c => (int)c)))),
                     new List<HashSet<int>>(line
                         .Split(" | ")[1]
                         .Split(' ')
                         .Select(s => new HashSet<int>(s
                             .ToCharArray()
-                            .Select(c => (int)c)))
-                        .OrderBy(d => d.Count)
-                        .ToList())));
+                            .Select(c => (int)c))))));
             }
 
-            var digitLookup = new Dictionary<int, Segment>();
-
+            var sum = 0;
+            
             foreach (var (input, output) in displays)
             {
-                digitLookup.Add(input[1].Except(input[0]).First(), Segment.Top);
+                var segmentMap = new Dictionary<Segment, IEnumerable<int>>();
+                var digitLookup = new Dictionary<int, HashSet<int>>();
+
+                var fiveCounts = new List<HashSet<int>>(input.Where(i => i.Count == 5));
+                var sixCounts = new List<HashSet<int>>(input.Where(i => i.Count == 6));
+
+                digitLookup.Add(1, input.Where(i => i.Count == 2).First());
+                digitLookup.Add(7, input.Where(i => i.Count == 3).First());
+                digitLookup.Add(4, input.Where(i => i.Count == 4).First());
+                digitLookup.Add(8, input.Where(i => i.Count == 7).First());
+
+                segmentMap.Add(Segment.Top, digitLookup[7].Except(digitLookup[1]));
+
+                var topLeftAndMiddle = digitLookup[4].Except(digitLookup[1]);
+                var topMiddleAndBottom = fiveCounts.Aggregate((acc, x) => acc.Intersect(x).ToHashSet());
+
+                segmentMap.Add(Segment.Middle, topMiddleAndBottom.Intersect(topLeftAndMiddle));
+                segmentMap.Add(Segment.TopLeft, topLeftAndMiddle.Except(segmentMap[Segment.Middle]));
+                segmentMap.Add(Segment.Bottom, topMiddleAndBottom.Except(segmentMap[Segment.Top]).Except(segmentMap[Segment.Middle]));
+
+                digitLookup.Add(5, fiveCounts.First(f => f.Contains(segmentMap[Segment.TopLeft].First())));
+                fiveCounts.Remove(digitLookup[5]);
+
+                digitLookup.Add(3, fiveCounts.First(f => digitLookup[5].Except(f).ToHashSet().SetEquals(segmentMap[Segment.TopLeft])));
+                fiveCounts.Remove(digitLookup[3]);
+
+                digitLookup.Add(2, fiveCounts.First());
+
+                segmentMap.Add(Segment.BottomRight, digitLookup[5].Except(topMiddleAndBottom).Except(segmentMap[Segment.TopLeft]));
+                segmentMap.Add(Segment.TopRight, digitLookup[1].Except(segmentMap[Segment.BottomRight]));
+                segmentMap.Add(Segment.BottomLeft, digitLookup[8].Except(digitLookup[5]).Except(segmentMap[Segment.TopRight]));
+
+                digitLookup.Add(0, sixCounts.First(f => !f.Contains(segmentMap[Segment.Middle].First())));
+                sixCounts.Remove(digitLookup[0]);
+
+                digitLookup.Add(6, sixCounts.First(f => f.Contains(segmentMap[Segment.BottomLeft].First())));
+                sixCounts.Remove(digitLookup[6]);
+
+                digitLookup.Add(9, sixCounts.First(f => f.Contains(segmentMap[Segment.TopRight].First())));
+
+                var hashToDigitMap = digitLookup.ToDictionary(k => k.Value, v => v.Key, HashSet<int>.CreateSetComparer());
+
+                var currentNumber = 0;
+                for (int i = 0; i < output.Count; i++)
+                {
+                    currentNumber += hashToDigitMap[output[i]] * (int)Math.Pow(10, 3 - i);
+                }
+
+                sum += currentNumber;
             }
 
-            //test2
-
-            throw new NotImplementedException();
+            return sum;
         }
 
         [Flags]

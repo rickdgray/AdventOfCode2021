@@ -1,7 +1,7 @@
 ﻿using AdventOfCode2021;
 
 var workingDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
-var path = Path.Combine(workingDirectory?.Parent?.Parent?.Parent?.FullName ?? throw new DirectoryNotFoundException(), "Data", "day08.txt");
+var path = Path.Combine(workingDirectory?.Parent?.Parent?.Parent?.FullName ?? throw new DirectoryNotFoundException(), "Data", "day09.txt");
 using var fileStream = File.OpenRead(path);
 using var streamReader = new StreamReader(fileStream);
 
@@ -13,4 +13,4 @@ while ((line = streamReader.ReadLine()) != null)
 }
 
 //currently working on:
-Console.WriteLine(Day08.Part2(data));
+Console.WriteLine(Day09.Part1(data));
