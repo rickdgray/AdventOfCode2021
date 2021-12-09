@@ -35,7 +35,7 @@
                 return knownFloorPaths[floorTile];
 
             var adjacentFound = false;
-            var bestAdjacent = new FloorTile(-1, -1, 9);
+            var bestAdjacent = new FloorTile(-1, -1, floorTile.Height);
             foreach (var adjacentFloorTiles in GetAdjacenctFloorTileCoords(floorTile.X, floorTile.Y, floor))
             {
                 if (floor[adjacentFloorTiles.Item1, adjacentFloorTiles.Item2] < bestAdjacent.Height)
@@ -66,13 +66,13 @@
             var adjacentFloorTiles = new List<Tuple<int, int>>();
 
             if (x > 0)
-                adjacentFloorTiles.Add(new Tuple<int, int>(-1, 0));
+                adjacentFloorTiles.Add(new Tuple<int, int>(x - 1, y));
             if (y > 0)
-                adjacentFloorTiles.Add(new Tuple<int, int>(0, -1));
+                adjacentFloorTiles.Add(new Tuple<int, int>(x, y - 1));
             if (x < xMax)
-                adjacentFloorTiles.Add(new Tuple<int, int>(1, 0));
+                adjacentFloorTiles.Add(new Tuple<int, int>(x + 1, y));
             if (y < yMax)
-                adjacentFloorTiles.Add(new Tuple<int, int>(0, 1));
+                adjacentFloorTiles.Add(new Tuple<int, int>(x, y + 1));
 
             return adjacentFloorTiles;
         }
