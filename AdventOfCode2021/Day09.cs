@@ -60,8 +60,8 @@
 
         public static List<Tuple<int, int>> GetAdjacenctFloorTileCoords(int x, int y, int[,] floor)
         {
-            var xMax = floor.GetLength(0);
-            var yMax = floor.GetLength(1);
+            var xMax = floor.GetLength(0) - 1;
+            var yMax = floor.GetLength(1) - 1;
 
             var adjacentFloorTiles = new List<Tuple<int, int>>();
 
