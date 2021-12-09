@@ -4,12 +4,96 @@
     {
         public static long Part1(List<string> data)
         {
-            return -1;
+            var floor = new int[data.Count, data[0].Length];
+            for (var i = 0; i < data.Count; i++)
+            {
+                var nums = data[i].ToCharArray();
+                for (var j = 0; j < nums.Length; j++)
+                {
+                    floor[i, j] = int.Parse(nums[j].ToString());
+                }
+            }
+
+            var knownFloorPaths = new Dictionary<FloorTile, FloorTile>();
+            for (var i = 0; i < floor.GetLength(0); i++)
+            {
+                for (var j = 0; j < floor.GetLength(1); j++)
+                {
+                    RecursivelyTraverseFloor(new FloorTile(i, j, floor[i, j]), floor, knownFloorPaths);
+                }
+            }
+
+            return knownFloorPaths.Values
+                .Distinct()
+                .Select(l => l.Height + 1)
+                .Sum();
+        }
+        
+        private static FloorTile RecursivelyTraverseFloor(FloorTile floorTile, int[,] floor, Dictionary<FloorTile, FloorTile> knownFloorPaths)
+        {
+            if (knownFloorPaths.ContainsKey(floorTile))
+                return knownFloorPaths[floorTile];
+
+            var adjacentFound = false;
+            var bestAdjacent = new FloorTile(-1, -1, 9);
+            foreach (var adjacentFloorTiles in GetAdjacenctFloorTileCoords(floorTile.X, floorTile.Y, floor))
+            {
+                if (floor[adjacentFloorTiles.Item1, adjacentFloorTiles.Item2] < bestAdjacent.Height)
+                {
+                    bestAdjacent.Height = floor[adjacentFloorTiles.Item1, adjacentFloorTiles.Item2];
+                    bestAdjacent.X = adjacentFloorTiles.Item1;
+                    bestAdjacent.Y = adjacentFloorTiles.Item2;
+                    adjacentFound = true;
+                }
+            }
+
+            if (adjacentFound)
+            {
+                var lowest = RecursivelyTraverseFloor(bestAdjacent, floor, knownFloorPaths);
+
+                if (!knownFloorPaths.ContainsKey(floorTile))
+                    knownFloorPaths.Add(floorTile, lowest);
+            }
+            
+            return floorTile;
+        }
+
+        public static List<Tuple<int, int>> GetAdjacenctFloorTileCoords(int x, int y, int[,] floor)
+        {
+            var xMax = floor.GetLength(0);
+            var yMax = floor.GetLength(1);
+
+            var adjacentFloorTiles = new List<Tuple<int, int>>();
+
+            if (x > 0)
+                adjacentFloorTiles.Add(new Tuple<int, int>(-1, 0));
+            if (y > 0)
+                adjacentFloorTiles.Add(new Tuple<int, int>(0, -1));
+            if (x < xMax)
+                adjacentFloorTiles.Add(new Tuple<int, int>(1, 0));
+            if (y < yMax)
+                adjacentFloorTiles.Add(new Tuple<int, int>(0, 1));
+
+            return adjacentFloorTiles;
         }
 
         public static long Part2(List<string> data)
         {
             return -1;
+        }
+
+        class FloorTile
+        {
+            public FloorTile(int x, int y, int height)
+            {
+                X = x;
+                Y = y;
+                Height = height;
+            }
+
+            public int X { get; set; }
+            public int Y { get; set; }
+            public int Height { get; set; }
         }
     }
 }
