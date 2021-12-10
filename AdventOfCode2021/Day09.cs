@@ -6,6 +6,53 @@ namespace AdventOfCode2021
     {
         public static long Part1(List<string> data)
         {
+            var floor = PopulateData(data);
+
+            var knownFloorPaths = new Dictionary<FloorTile, FloorTile>();
+            for (var i = 0; i < floor.GetLength(0); i++)
+            {
+                for (var j = 0; j < floor.GetLength(1); j++)
+                {
+                    RecursivelyTraverseToLowest(new FloorTile(i, j, floor[i, j]), floor, knownFloorPaths);
+                }
+            }
+
+            return knownFloorPaths.Values
+                .Distinct()
+                .Select(l => l.Height + 1)
+                .Sum();
+        }
+
+        public static long Part2(List<string> data)
+        {
+            var floor = PopulateData(data);
+
+            var knownFloorPaths = new Dictionary<FloorTile, FloorTile>();
+            for (var i = 0; i < floor.GetLength(0); i++)
+            {
+                for (var j = 0; j < floor.GetLength(1); j++)
+                {
+                    RecursivelyTraverseToLowest(new FloorTile(i, j, floor[i, j]), floor, knownFloorPaths);
+                }
+            }
+
+            var lowPoints = knownFloorPaths.Values
+                .Distinct()
+                .ToList();
+
+            var knownFloorTiles = new List<FloorTile>();
+            var basin = 0;
+            foreach (var lowPoint in lowPoints)
+            {
+                RecursivelyTraverseUp(lowPoint, floor, knownFloorTiles, basin);
+                basin++;
+            }
+
+            throw new NotImplementedException();
+        }
+
+        private static int[,] PopulateData(List<string> data)
+        {
             var floor = new int[data.Count, data[0].Length];
             for (var i = 0; i < data.Count; i++)
             {
@@ -16,35 +63,23 @@ namespace AdventOfCode2021
                 }
             }
 
-            var knownFloorPaths = new Dictionary<FloorTile, FloorTile>();
-            for (var i = 0; i < floor.GetLength(0); i++)
-            {
-                for (var j = 0; j < floor.GetLength(1); j++)
-                {
-                    RecursivelyTraverseFloor(new FloorTile(i, j, floor[i, j]), floor, knownFloorPaths);
-                }
-            }
-
-            return knownFloorPaths.Values
-                .Distinct()
-                .Select(l => l.Height + 1)
-                .Sum();
+            return floor;
         }
-        
-        private static FloorTile RecursivelyTraverseFloor(FloorTile floorTile, int[,] floor, Dictionary<FloorTile, FloorTile> knownFloorPaths)
+
+        private static FloorTile RecursivelyTraverseToLowest(FloorTile floorTile, int[,] floor, Dictionary<FloorTile, FloorTile> knownFloorPaths)
         {
             if (knownFloorPaths.ContainsKey(floorTile))
                 return knownFloorPaths[floorTile];
 
             var adjacentFound = false;
             var bestAdjacent = new FloorTile(-1, -1, floorTile.Height);
-            foreach (var adjacentFloorTiles in GetAdjacenctFloorTileCoords(floorTile.X, floorTile.Y, floor))
+            foreach (var adjacentFloorTilesCoords in GetAdjacenctFloorTileCoords(floorTile.X, floorTile.Y, floor))
             {
-                if (floor[adjacentFloorTiles.Item1, adjacentFloorTiles.Item2] < bestAdjacent.Height)
+                if (floor[adjacentFloorTilesCoords.Item1, adjacentFloorTilesCoords.Item2] < bestAdjacent.Height)
                 {
-                    bestAdjacent.Height = floor[adjacentFloorTiles.Item1, adjacentFloorTiles.Item2];
-                    bestAdjacent.X = adjacentFloorTiles.Item1;
-                    bestAdjacent.Y = adjacentFloorTiles.Item2;
+                    bestAdjacent.Height = floor[adjacentFloorTilesCoords.Item1, adjacentFloorTilesCoords.Item2];
+                    bestAdjacent.X = adjacentFloorTilesCoords.Item1;
+                    bestAdjacent.Y = adjacentFloorTilesCoords.Item2;
                     adjacentFound = true;
                 }
             }
@@ -52,7 +87,7 @@ namespace AdventOfCode2021
             var lowest = floorTile;
             if (adjacentFound)
             {
-                lowest = RecursivelyTraverseFloor(bestAdjacent, floor, knownFloorPaths);
+                lowest = RecursivelyTraverseToLowest(bestAdjacent, floor, knownFloorPaths);
 
                 if (!knownFloorPaths.ContainsKey(floorTile))
                     knownFloorPaths.Add(floorTile, lowest);
@@ -64,7 +99,25 @@ namespace AdventOfCode2021
             return lowest;
         }
 
-        public static List<Tuple<int, int>> GetAdjacenctFloorTileCoords(int x, int y, int[,] floor)
+        private static void RecursivelyTraverseUp(FloorTile floorTile, int[,] floor, List<FloorTile> knownFloorTiles, int basin)
+        {
+            foreach (var adjacentFloorTileCoords in GetAdjacenctFloorTileCoords(floorTile.X, floorTile.Y, floor))
+            {
+                var adjacentFloorTile = new FloorTile(adjacentFloorTileCoords.Item1, adjacentFloorTileCoords.Item2,
+                    floor[adjacentFloorTileCoords.Item1, adjacentFloorTileCoords.Item2], basin);
+                
+                if (adjacentFloorTile.Height != 9)
+                {
+                    if (knownFloorTiles.Contains(floorTile))
+                        return;
+
+                    knownFloorTiles.Add(floorTile);
+                    RecursivelyTraverseUp(adjacentFloorTile, floor, knownFloorTiles, basin);
+                }
+            }
+        }
+
+        private static List<Tuple<int, int>> GetAdjacenctFloorTileCoords(int x, int y, int[,] floor)
         {
             var xMax = floor.GetLength(0) - 1;
             var yMax = floor.GetLength(1) - 1;
@@ -82,11 +135,6 @@ namespace AdventOfCode2021
 
             return adjacentFloorTiles;
         }
-
-        public static long Part2(List<string> data)
-        {
-            return -1;
-        }
     }
 
     class FloorTile : IEqualityComparer<FloorTile>, IEquatable<FloorTile>
@@ -98,9 +146,18 @@ namespace AdventOfCode2021
             Height = height;
         }
 
+        public FloorTile(int x, int y, int height, int basin)
+        {
+            X = x;
+            Y = y;
+            Height = height;
+            Basin = basin;
+        }
+
         public int X { get; set; }
         public int Y { get; set; }
         public int Height { get; set; }
+        public int? Basin { get; set; }
 
         public bool Equals(FloorTile? x, FloorTile? y)
         {
