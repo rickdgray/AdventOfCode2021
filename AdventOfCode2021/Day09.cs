@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode2021
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace AdventOfCode2021
 {
     public class Day09
     {
@@ -47,15 +49,19 @@
                 }
             }
 
+            var lowest = floorTile;
             if (adjacentFound)
             {
-                var lowest = RecursivelyTraverseFloor(bestAdjacent, floor, knownFloorPaths);
+                lowest = RecursivelyTraverseFloor(bestAdjacent, floor, knownFloorPaths);
 
                 if (!knownFloorPaths.ContainsKey(floorTile))
                     knownFloorPaths.Add(floorTile, lowest);
+
+                if (!knownFloorPaths.ContainsKey(lowest))
+                    knownFloorPaths.Add(lowest, lowest);
             }
             
-            return floorTile;
+            return lowest;
         }
 
         public static List<Tuple<int, int>> GetAdjacenctFloorTileCoords(int x, int y, int[,] floor)
@@ -81,19 +87,55 @@
         {
             return -1;
         }
+    }
 
-        class FloorTile
+    class FloorTile : IEqualityComparer<FloorTile>, IEquatable<FloorTile>
+    {
+        public FloorTile(int x, int y, int height)
         {
-            public FloorTile(int x, int y, int height)
-            {
-                X = x;
-                Y = y;
-                Height = height;
-            }
-
-            public int X { get; set; }
-            public int Y { get; set; }
-            public int Height { get; set; }
+            X = x;
+            Y = y;
+            Height = height;
         }
+
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Height { get; set; }
+
+        public bool Equals(FloorTile? x, FloorTile? y)
+        {
+            if (ReferenceEquals(x, y))
+                return true;
+
+            if (x == null && y == null)
+                return true;
+
+            if (x == null)
+                return false;
+
+            if (y == null)
+                return false;
+
+            return x.X == y.X && x.Y == y.Y;
+        }
+
+        public bool Equals(FloorTile? other)
+        {
+            if (other is null)
+                return false;
+
+            if (ReferenceEquals(this, other))
+                return true;
+
+            return X == other.X && Y == other.Y;
+        }
+
+        public int GetHashCode([DisallowNull] FloorTile obj) =>
+            //multiply first hash by prime
+            obj.X.GetHashCode() * 2147483647 + obj.Y.GetHashCode();
+
+        public override bool Equals(object obj) => Equals(obj as FloorTile);
+
+        public override int GetHashCode() => GetHashCode(this);
     }
 }
