@@ -4,7 +4,7 @@
     {
         public static long Part1(List<string> data)
         {
-            var crabPositions = new List<int>(data[0].Split(',').Select(f => int.Parse(f)));
+            var crabPositions = new List<long>(data[0].Split(',').Select(f => long.Parse(f)));
             crabPositions.Sort();
             var median = Median(crabPositions);
 
@@ -28,14 +28,14 @@
             return possibleAnswers.Min();
         }
 
-        private static int Median(List<int> list)
+        public static long Median(List<long> list)
         {
-            int median;
+            long median;
             if (list.Count % 2 == 0)
             {
                 var leftIndex = (int)(list.Count / 2d);
                 var rightIndex = leftIndex - 1;
-                median = (int)Math.Round((list[leftIndex] + list[rightIndex]) / 2d, MidpointRounding.AwayFromZero);
+                median = (long)Math.Round((list[leftIndex] + list[rightIndex]) / 2d, MidpointRounding.AwayFromZero);
             }
             else
             {
