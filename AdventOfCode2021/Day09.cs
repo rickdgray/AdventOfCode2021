@@ -44,6 +44,8 @@ namespace AdventOfCode2021
             var basin = 0;
             foreach (var lowPoint in lowPoints)
             {
+                lowPoint.Height = floor[lowPoint.Y, lowPoint.X];
+                lowPoint.Basin = basin;
                 RecursivelyTraverseUp(lowPoint, floor, knownFloorTiles, basin);
                 basin++;
             }
@@ -73,13 +75,13 @@ namespace AdventOfCode2021
 
             var adjacentFound = false;
             var bestAdjacent = new FloorTile(-1, -1, floorTile.Height);
-            foreach (var adjacentFloorTilesCoords in GetAdjacenctFloorTileCoords(floorTile.X, floorTile.Y, floor))
+            foreach (var adjacentFloorTilesCoords in GetAdjacenctFloorTileCoords(floorTile.Y, floorTile.X, floor))
             {
                 if (floor[adjacentFloorTilesCoords.Item1, adjacentFloorTilesCoords.Item2] < bestAdjacent.Height)
                 {
                     bestAdjacent.Height = floor[adjacentFloorTilesCoords.Item1, adjacentFloorTilesCoords.Item2];
-                    bestAdjacent.X = adjacentFloorTilesCoords.Item1;
-                    bestAdjacent.Y = adjacentFloorTilesCoords.Item2;
+                    bestAdjacent.Y = adjacentFloorTilesCoords.Item1;
+                    bestAdjacent.X = adjacentFloorTilesCoords.Item2;
                     adjacentFound = true;
                 }
             }
@@ -101,37 +103,37 @@ namespace AdventOfCode2021
 
         private static void RecursivelyTraverseUp(FloorTile floorTile, int[,] floor, List<FloorTile> knownFloorTiles, int basin)
         {
-            foreach (var adjacentFloorTileCoords in GetAdjacenctFloorTileCoords(floorTile.X, floorTile.Y, floor))
-            {
-                var adjacentFloorTile = new FloorTile(adjacentFloorTileCoords.Item1, adjacentFloorTileCoords.Item2,
-                    floor[adjacentFloorTileCoords.Item1, adjacentFloorTileCoords.Item2], basin);
-                
-                if (adjacentFloorTile.Height != 9)
-                {
-                    if (knownFloorTiles.Contains(floorTile))
-                        return;
+            if (floorTile.Height == 9)
+                return;
 
-                    knownFloorTiles.Add(floorTile);
-                    RecursivelyTraverseUp(adjacentFloorTile, floor, knownFloorTiles, basin);
-                }
+            if (knownFloorTiles.Contains(floorTile))
+                return;
+            else
+                knownFloorTiles.Add(floorTile);
+
+            foreach (var adjacentFloorTileCoords in GetAdjacenctFloorTileCoords(floorTile.Y, floorTile.X, floor))
+            {
+                RecursivelyTraverseUp(new FloorTile(adjacentFloorTileCoords.Item1, adjacentFloorTileCoords.Item2,
+                    floor[adjacentFloorTileCoords.Item1, adjacentFloorTileCoords.Item2], basin), floor,
+                    knownFloorTiles, basin);
             }
         }
 
-        private static List<Tuple<int, int>> GetAdjacenctFloorTileCoords(int x, int y, int[,] floor)
+        private static List<Tuple<int, int>> GetAdjacenctFloorTileCoords(int y, int x, int[,] floor)
         {
-            var xMax = floor.GetLength(0) - 1;
-            var yMax = floor.GetLength(1) - 1;
+            var yMax = floor.GetLength(0) - 1;
+            var xMax = floor.GetLength(1) - 1;
 
             var adjacentFloorTiles = new List<Tuple<int, int>>();
 
-            if (x > 0)
-                adjacentFloorTiles.Add(new Tuple<int, int>(x - 1, y));
             if (y > 0)
-                adjacentFloorTiles.Add(new Tuple<int, int>(x, y - 1));
-            if (x < xMax)
-                adjacentFloorTiles.Add(new Tuple<int, int>(x + 1, y));
+                adjacentFloorTiles.Add(new Tuple<int, int>(y - 1, x));
+            if (x > 0)
+                adjacentFloorTiles.Add(new Tuple<int, int>(y, x - 1));
             if (y < yMax)
-                adjacentFloorTiles.Add(new Tuple<int, int>(x, y + 1));
+                adjacentFloorTiles.Add(new Tuple<int, int>(y + 1, x));
+            if (x < xMax)
+                adjacentFloorTiles.Add(new Tuple<int, int>(y, x + 1));
 
             return adjacentFloorTiles;
         }
@@ -139,23 +141,23 @@ namespace AdventOfCode2021
 
     class FloorTile : IEqualityComparer<FloorTile>, IEquatable<FloorTile>
     {
-        public FloorTile(int x, int y, int height)
+        public FloorTile(int y, int x, int height)
         {
-            X = x;
             Y = y;
+            X = x;
             Height = height;
         }
 
-        public FloorTile(int x, int y, int height, int basin)
+        public FloorTile(int y, int x, int height, int basin)
         {
-            X = x;
             Y = y;
+            X = x;
             Height = height;
             Basin = basin;
         }
 
-        public int X { get; set; }
         public int Y { get; set; }
+        public int X { get; set; }
         public int Height { get; set; }
         public int? Basin { get; set; }
 
@@ -173,7 +175,7 @@ namespace AdventOfCode2021
             if (y == null)
                 return false;
 
-            return x.X == y.X && x.Y == y.Y;
+            return x.Y == y.Y && x.X == y.X;
         }
 
         public bool Equals(FloorTile? other)
@@ -184,12 +186,12 @@ namespace AdventOfCode2021
             if (ReferenceEquals(this, other))
                 return true;
 
-            return X == other.X && Y == other.Y;
+            return Y == other.Y && X == other.X;
         }
 
         public int GetHashCode([DisallowNull] FloorTile obj) =>
             //multiply first hash by prime
-            obj.X.GetHashCode() * 2147483647 + obj.Y.GetHashCode();
+            obj.Y.GetHashCode() * 2147483647 + obj.X.GetHashCode();
 
         public override bool Equals(object obj) => Equals(obj as FloorTile);
 
